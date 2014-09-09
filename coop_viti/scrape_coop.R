@@ -1,4 +1,11 @@
 ##script pour parser les pages du site http://www.si-vitifrance.com/ pour les coopératives
+##ATTENTION 
+##On peut modifier la date de l'étude diachronique en modifiant dans l'URL 
+##http://www.si-vitifrance.com/docs/cvi/cvi10/ par http://www.si-vitifrance.com/docs/cvi/cvi13/ pour passer de 2010 à 2013
+##attention à la phase d'enregistrement
+
+
+
 library(rgdal) ##manipumation de données spatial avec gdal
 library(XML)
 library(RCurl)
@@ -6,11 +13,15 @@ library(stringr) ##manipulation des chaines de charactères
 
 
 rm(list=ls())
-setwd("~/Téléchargements/coop_viti/")
+setwd("~/github/bazaRd/coop_viti/")
 
-communes<-readOGR(dsn = "/home/delaye/Téléchargements/coop_viti/geofla",layer="commune_s")
+#####################################################################
+## ICI on peut definir la date entre 07 et 13
+annee<-10
+#####################################################################
+communes<-readOGR(dsn = "./geofla/",layer="commune_s")
 ##c'est le champs code_dep qu'il faut utiliser pour scrapper les url
-nam_col<-t(read.csv("/home/delaye/Téléchargements/coop_viti/name_col.csv",sep = ",",header = F))
+nam_col<-t(read.csv("name_col.csv",sep = ",",header = F))
 nam_col<-nam_col[1,]
 nam_col<-nam_col[-1]
 
@@ -20,7 +31,7 @@ code_insee<-as.character(unique(communes@data$CODE_DEPT))
 
 for(h in 1: length(code_insee)){
   doc<-NULL
-  url<-paste("http://www.si-vitifrance.com/docs/cvi/cvi13/cartes_inter/c_vin01_coop_com",code_insee[h],"/embfiles/th0.xml",sep="")
+  url<-paste("http://www.si-vitifrance.com/docs/cvi/cvi",annee,"/cartes_inter/c_vin01_coop_com",code_insee[h],"/embfiles/th0.xml",sep="")
   verif<-sapply(url, url.exists)
   if (verif == TRUE){
     doc = htmlTreeParse(url, useInternalNodes = T)
@@ -53,4 +64,4 @@ for(o in ordre.var){
 }
 
 #df.coop est donc le data.frmae exploitable
-write.csv(df.coop,"/home/delaye/Téléchargements/coop_viti/volume_coop_commune.csv",row.names=F)
+write.csv(df.coop,paste("volume_coop_commune",annee,".csv",sep=""),row.names=F)

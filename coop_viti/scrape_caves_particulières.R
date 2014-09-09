@@ -6,11 +6,16 @@ library(stringr) ##manipulation des chaines de charactères
 
 
 rm(list=ls())
-setwd("~/Téléchargements/coop_viti/")
+setwd("~/github/bazaRd/coop_viti/")
 
-communes<-readOGR(dsn = "/home/delaye/Téléchargements/coop_viti/geofla",layer="commune_s")
+#####################################################################
+## ICI on peut definir la date entre 07 et 13
+annee<-10
+#####################################################################
+
+communes<-readOGR(dsn = "./geofla",layer="commune_s")
 ##c'est le champs code_dep qu'il faut utiliser pour scrapper les url
-nam_col<-t(read.csv("/home/delaye/Téléchargements/coop_viti/name_col_particulieres.csv",sep = ",",header = F))
+nam_col<-t(read.csv("name_col_particulieres.csv",sep = ",",header = F))
 nam_col<-nam_col[1,]
 nam_col<-nam_col[-1]
 
@@ -19,7 +24,7 @@ code_insee<-as.character(unique(communes@data$CODE_DEPT))
 ##construction des URL
 for(h in 1: length(code_insee)){
   doc<-NULL
-  url<-paste("http://www.si-vitifrance.com/docs/cvi/cvi13/cartes_inter/c_vin02_cpart_com",code_insee[h],"/embfiles/th0.xml",sep="")
+  url<-paste("http://www.si-vitifrance.com/docs/cvi/cvi",annee,"/cartes_inter/c_vin02_cpart_com",code_insee[h],"/embfiles/th0.xml",sep="")
   verif<-sapply(url, url.exists)
   if (verif == TRUE){
     doc = htmlTreeParse(url, useInternalNodes = T)
@@ -51,4 +56,4 @@ for(o in ordre.var){
 }
 
 #df.coop est donc le data.frmae exploitable
-write.csv(df.particulier,"/home/delaye/Téléchargements/coop_viti/volume_caves_particulieres_commune.csv",row.names=F)
+write.csv(df.particulier,paste("volume_caves_particulieres_commune",annee,".csv",sep=""),row.names=F)
