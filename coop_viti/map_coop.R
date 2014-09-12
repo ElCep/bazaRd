@@ -48,10 +48,18 @@ df.aggregation[is.na(df.aggregation)] <- 0 #convertir les NA en zero
 df.aggregation$pct_coop_13<-df.aggregation$volumes_coop_2013_hl/(df.aggregation$volumes_coop_2013_hl+df.aggregation$volumes_particulier_2013_hl)*100
 df.aggregation$pct_coop_10<-df.aggregation$volumes_coop_2010_hl/(df.aggregation$volumes_coop_2010_hl+df.aggregation$volumes_particulier_2010_hl)*100
 
+##les proportion de vendange transformé en cave particulière
+df.aggregation$pct_parti_13<-df.aggregation$volumes_particulier_2013_hl/(df.aggregation$volumes_coop_2013_hl+df.aggregation$volumes_particulier_2013_hl)*100
+df.aggregation$pct_parti_10<-df.aggregation$volumes_particulier_2010_hl/(df.aggregation$volumes_coop_2010_hl+df.aggregation$volumes_particulier_2010_hl)*100
+
 ##Les augmentation et réduction de volume entre 2010 et 2013
 df.aggregation$variation_coop_1013<-df.aggregation$volumes_coop_2013_hl-df.aggregation$volumes_coop_2010_hl
 df.aggregation$variation_particulier_1013<-df.aggregation$volumes_particulier_2013_hl-df.aggregation$volumes_particulier_2010_hl
 
+##ce que représente chaque type de production par rapport a la production viticole nationnal
+df.aggregation$volume_viticole_2013<-(df.aggregation$volumes_particulier_2013_hl+df.aggregation$volumes_coop_2013_hl)/(sum(df.aggregation$volumes_coop_2013_hl)+sum(df.aggregation$volumes_particulier_2013_hl))*100
+
+##jointure sur les données spatial
 departements@data<-join(departements@data,df.aggregation,by="CODE_DEPT",type = "left")
 
 ##ggplot2##
@@ -60,8 +68,19 @@ departements@data$id<-rownames(departements@data)
 dep.pts<-fortify(departements,region="id")
 dep.df<-join(dep.pts, departements@data, by="id")
 
+## map générale ####
+map_volume_viticole_dep<-ggplot(data=dep.df,aes(x=long,y=lat,group=group,fill=volume_viticole_2013))+
+  geom_polygon()+
+  scale_fill_gradient(high="red",low="#811453",name="% du volume \n produit en \ndépartement")+
+  labs(title="Proportion de la production viticole départementale (en hl)\n par rapport à la production nationale 2013")+
+  theme_bw()+
+  theme(plot.title = element_text(lineheight=.8, face="bold"))+
+  annotate("text", label = "Sources: IGN geoflat & FranceAgriMer", x = 370000, y = 6050000, size = 5)+
+  annotate("text", label = "Réalisation : E. Delay", x = 240000, y = 6010000, size = 5)+
+  coord_equal()
+map_volume_viticole_dep
 
-
+###map coopératives ####
 map_coop_2013<-ggplot(data=dep.df,aes(x=long,y=lat,group=group,fill=pct_coop_13))+
   geom_polygon()+
   scale_fill_gradient(high="red",low="#CECECE",name="% du volume \n produit")+
@@ -86,9 +105,41 @@ print(map_coop_2010)
 
 ggsave("../img/pct_coop_departements2013.png",map_coop_2013,width = 8,height = 7,dpi = 150)
 ggsave("../img/pct_coop_departements2010.png",map_coop_2010,width = 8,height = 7,dpi = 150)
+ggsave("../img/pct_prod_deptVSnationnale.png",map_volume_viticole_dep,width = 8,height = 7,dpi = 150)
 
-png("../img/ggplot_coop_2010_203.png", height = 700, width = 1400)
-  multiplot(map_coop_2010, map_coop_2013, cols=2)
+png("../img/ggplot_coop_2010_203.png", height = 700, width = 2100)
+  multiplot(map_volume_viticole_dep,map_coop_2010, map_coop_2013, cols=3)
+dev.off()
+
+##map caves particulières ####
+map_parti_2013<-ggplot(data=dep.df,aes(x=long,y=lat,group=group,fill=pct_parti_13))+
+  geom_polygon()+
+  scale_fill_gradient(high="#4B0082",low="#CECECE",name="% du volume \n produit")+
+  labs(title="Proportion de la production viticole (en hl)\n produite en caves particulières en 2013")+
+  theme_bw()+
+  theme(plot.title = element_text(lineheight=.8, face="bold"))+
+  annotate("text", label = "Sources: IGN geoflat & FranceAgriMer", x = 370000, y = 6050000, size = 5)+
+  annotate("text", label = "Réalisation : E. Delay", x = 240000, y = 6010000, size = 5)+
+  coord_equal()
+print(map_parti_2013)
+
+map_parti_2010<-ggplot(data=dep.df,aes(x=long,y=lat,group=group,fill=pct_parti_10))+
+  geom_polygon()+
+  scale_fill_gradient(high="#4B0082",low="#CECECE",name="% du volume \n produit")+
+  labs(title="Proportion de la production viticole (en hl)\n produite en caves particulières en 2010")+
+  theme_bw()+
+  theme(plot.title = element_text(lineheight=.8, face="bold"))+
+  annotate("text", label = "Sources: IGN geoflat & FranceAgriMer", x = 370000, y = 6050000, size = 5)+
+  annotate("text", label = "Réalisation : E. Delay", x = 240000, y = 6010000, size = 5)+
+  coord_equal()
+print(map_parti_2010)
+
+ggsave("../img/pct_parti_departements2013.png",map_parti_2013,width = 8,height = 7,dpi = 150)
+ggsave("../img/pct_parti_departements2010.png",map_parti_2010,width = 8,height = 7,dpi = 150)
+
+
+png("../img/ggplot_cave_parti_2010_203.png", height = 700, width = 2100)
+multiplot(map_volume_viticole_dep,map_parti_2010, map_parti_2013, cols=3)
 dev.off()
 
 ##map de la variation entre 2010 et 2013
