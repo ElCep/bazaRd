@@ -31,7 +31,7 @@ code_insee<-as.character(unique(communes@data$CODE_DEPT))
 
 for(h in 1: length(code_insee)){
   doc<-NULL
-  url<-paste("http://www.si-vitifrance.com/docs/cvi/cvi",annee,"/cartes_inter/c_vin01_coop_com",code_insee[h],"/embfiles/th0.xml",sep="")
+  url<-paste("http://www.observatoire-viti-france.com/docs/cvi/cvi",annee,"/cartes_inter/c_vin01_coop_com",code_insee[h],"/embfiles/th0.xml",sep="")
   verif<-sapply(url, url.exists)
   if (verif == TRUE){
     doc = htmlTreeParse(url, useInternalNodes = T)
