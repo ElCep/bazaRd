@@ -86,7 +86,7 @@ reg_lin<-ggplot(data=df.aggregation, aes(x=volumes_coop_2013_hl, y=volumes_parti
   geom_point()+
   geom_text(aes(label=tolower(NOM_DEPT)),hjust=0, vjust=1)+
   stat_smooth(data=df.aggregation[!sel,], aes(x=volumes_coop_2013_hl, y=volumes_particulier_2013_hl),
-              method=lm)+
+              method=lm, colour="#333333")+
   labs(x="volumes traités en coopérative",y="volume traités en cave particulière")
 reg_lin
 ggsave("../img/regression.png",reg_lin,dpi = 120, height = 7, width = 15)
@@ -95,8 +95,9 @@ reg_lin_zoom<-ggplot(data=df.aggregation, aes(x=volumes_coop_2013_hl, y=volumes_
   geom_point()+
   geom_text(aes(label=tolower(NOM_DEPT)),hjust=0, vjust=1)+
   stat_smooth(data=df.aggregation[!sel,], aes(x=volumes_coop_2013_hl, y=volumes_particulier_2013_hl),
-              method=lm)+
+              method=lm,colour="#333333")+
   labs(x="volumes traités en coopérative",y="volume traités en cave particulière")+
-  scale_x_continuous(limits = c(0, 1000000))+
-  scale_y_continuous(limits = c(0, 1000000))
+  scale_x_continuous(limits = c(0, 750000))+
+  scale_y_continuous(limits = c(0, 750000))
 reg_lin_zoom
+ggsave("../img/regression_ZOOM.png",reg_lin,dpi = 120, height = 7, width = 15)
